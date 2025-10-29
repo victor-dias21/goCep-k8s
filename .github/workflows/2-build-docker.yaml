@@ -8,6 +8,7 @@ on:
         type: string
 
 jobs:
+  # Build the Docker image and upload it alongside metadata for downstream jobs.
   build:
     runs-on: ubuntu-latest
     permissions:

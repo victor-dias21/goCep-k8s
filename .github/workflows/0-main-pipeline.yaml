@@ -7,6 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Derive the commit SHA that downstream reusable workflows must check out.
   context:
     runs-on: ubuntu-latest
     permissions:
@@ -22,6 +23,7 @@ jobs:
             echo "sha=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
           fi
 
+  # Reusable job: lint + tests + binary artifact.
   tests:
     needs: context
     permissions:
@@ -30,6 +32,7 @@ jobs:
     with:
       source-sha: ${{ needs.context.outputs.sha }}
 
+  # Reusable job: build Docker image and publish it as an artifact.
   build:
     needs: [context, tests]
     permissions:
@@ -40,6 +43,7 @@ jobs:
       source-sha: ${{ needs.context.outputs.sha }}
     secrets: inherit
 
+  # Reusable job: scan the produced image with Trivy.
   scan:
     needs: [context, build]
     permissions:
@@ -50,6 +54,7 @@ jobs:
       source-sha: ${{ needs.context.outputs.sha }}
     secrets: inherit
 
+  # Reusable job: push the image to Docker Hub (requires secrets).
   push-registry:
     needs: [context, scan]
     permissions:

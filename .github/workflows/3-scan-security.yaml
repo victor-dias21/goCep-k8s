@@ -8,6 +8,7 @@ on:
         type: string
 
 jobs:
+  # Download the previously built image and run vulnerability scanning.
   scan:
     runs-on: ubuntu-latest
     permissions:
@@ -44,7 +45,6 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Trivy report
         if: always()

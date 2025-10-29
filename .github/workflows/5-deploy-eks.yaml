@@ -13,6 +13,7 @@ on:
         type: string
 
 jobs:
+  # Manual deploy pipeline: authenticate with AWS and roll out the chosen image to EKS.
   deploy:
     runs-on: ubuntu-latest
     permissions:

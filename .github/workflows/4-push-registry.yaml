@@ -8,6 +8,7 @@ on:
         type: string
 
 jobs:
+  # Restore the built image and push versioned/latest tags to Docker Hub.
   push:
     runs-on: ubuntu-latest
     permissions:

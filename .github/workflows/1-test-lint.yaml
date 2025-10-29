@@ -8,6 +8,7 @@ on:
         type: string
 
 jobs:
+  # Run lint (gofmt/go vet), tests, and package the binary artifact.
   test:
     runs-on: ubuntu-latest
     steps:
