@@ -1,0 +1,64 @@
+name: 3. Scan Security
+
+on:
+  workflow_run:
+    workflows: ["2. Build Docker"]
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  scan:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Determine source revision
+        id: source
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            echo "sha=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "sha=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.source.outputs.sha }}
+
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: gocep-image
+
+      - name: Load image metadata
+        run: |
+          set -euo pipefail
+          source image-metadata.env
+          echo "IMAGE_NAME=$IMAGE_NAME" >> "$GITHUB_ENV"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> "$GITHUB_ENV"
+
+      - name: Load Docker image
+        run: docker load -i gocep-image.tar
+
+      - name: Run Trivy scan
+        uses: aquasecurity/trivy-action@v0.20.0
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          format: table
+          output: trivy-report.txt
+          exit-code: '1'
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Trivy report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: trivy-report.txt
+        continue-on-error: true

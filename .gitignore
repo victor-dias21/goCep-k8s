@@ -1,28 +1,39 @@
-# Compiled Object files, Static and Dynamic libs (Shared Objects)
-*.o
-*.a
-*.so
-
-# Folders
-_obj
-_test
-
-# Architecture specific extensions/prefixes
-*.[568vq]
-[568vq].out
-
-*.cgo1.go
-*.cgo2.c
-_cgo_defun.c
-_cgo_gotypes.go
-_cgo_export.*
-
-_testmain.go
-
+# Binaries
+/goCep
 *.exe
-*.test
-*.prof
-src
-goCep
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Build directories
+/bin/
+/dist/
+/build/
+
+# Coverage
+coverage.out
+*.coverprofile
+
+# Logs
+*.log
+
+# IDE/editor config
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Environment files
+.env
+.env.*
+*.env.local
+*.secret
+*.secret.yaml
+k8s/secret.local.yaml
+
+# Kubernetes generated files
+*.yaml.tmp
+
+# Go modules vendor directory
 vendor/
-.idea

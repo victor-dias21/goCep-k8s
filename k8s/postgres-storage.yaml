@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: gocep-postgres-pv
+  labels:
+    app: gocep-postgres
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gocep-postgres
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /var/lib/gocep/postgres
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gocep-postgres-pvc
+  namespace: gocep
+  labels:
+    app: gocep-postgres
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gocep-postgres
+  resources:
+    requests:
+      storage: 1Gi
+  volumeName: gocep-postgres-pv
