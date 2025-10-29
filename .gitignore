@@ -37,3 +37,6 @@ k8s/secret.local.yaml
 
 # Go modules vendor directory
 vendor/
+
+# Workflow diagnostic logs
+.workflowlogs/

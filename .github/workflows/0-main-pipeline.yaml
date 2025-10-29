@@ -31,7 +31,7 @@ jobs:
       source-sha: ${{ needs.context.outputs.sha }}
 
   build:
-    needs: tests
+    needs: [context, tests]
     permissions:
       contents: read
       actions: read
@@ -41,7 +41,7 @@ jobs:
     secrets: inherit
 
   scan:
-    needs: build
+    needs: [context, build]
     permissions:
       contents: read
       security-events: write
@@ -51,7 +51,7 @@ jobs:
     secrets: inherit
 
   push-registry:
-    needs: scan
+    needs: [context, scan]
     permissions:
       contents: read
     uses: ./.github/workflows/4-push-registry.yaml
