@@ -84,10 +84,10 @@ API em Go que consulta o ViaCEP, cacheia resultados em PostgreSQL e Ã© distribuÃ
    kubectl create namespace gocep
    kubectl create secret generic gocep-secrets \
      --namespace gocep \
-     --from-literal=POSTGRES_USER=postgres \
-     --from-literal=POSTGRES_PASSWORD=1234 \
+     --from-literal=POSTGRES_USER=user \
+     --from-literal=POSTGRES_PASSWORD=pass \
      --from-literal=POSTGRES_DB=cepdb \
-     --from-literal=DB_DSN="postgres://postgres:1234@gocep-postgres.gocep.svc.cluster.local:5432/cepdb?sslmode=disable"
+     --from-literal=DB_DSN="postgres://user:pass@gocep-postgres.gocep.svc.cluster.local:5432/cepdb?sslmode=disable"
    ```
    > Em `k8s/secret.yaml`, substitua os placeholders apenas se quiser aplicar o arquivo diretamente.
 
