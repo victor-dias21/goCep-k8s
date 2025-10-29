@@ -1,10 +1,11 @@
 name: 1. Test & Lint
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      source-sha:
+        required: true
+        type: string
 
 jobs:
   test:
@@ -12,6 +13,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source-sha }}
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -33,6 +36,7 @@ jobs:
 
       - name: Run tests
         run: go test ./...
+
       - name: Build goCep binary
         run: go build -o goCep ./cmd/api
 

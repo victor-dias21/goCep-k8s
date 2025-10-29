@@ -1,46 +1,39 @@
 name: 5. Deploy to EKS
 
 on:
-  workflow_run:
-    workflows: ["4. Push to Registry"]
-    types: [completed]
   workflow_dispatch:
+    inputs:
+      source-sha:
+        description: Commit SHA to deploy
+        required: true
+        type: string
+      image-tag:
+        description: Docker image tag (defaults to commit SHA)
+        required: false
+        type: string
 
 jobs:
   deploy:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
     env:
       K8S_NAMESPACE: gocep
+      IMAGE_NAME: victordias21/gocep
     steps:
-      - name: Determine source revision
-        id: source
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_run" ]; then
-            echo "sha=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "sha=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.source.outputs.sha }}
+          ref: ${{ inputs.source-sha }}
 
-      - name: Download image metadata
-        uses: actions/download-artifact@v4
-        with:
-          name: gocep-image-metadata
-
-      - name: Load image metadata
+      - name: Resolve image tag
         run: |
-          set -euo pipefail
-          source image-metadata.env
-          echo "IMAGE_NAME=$IMAGE_NAME" >> "$GITHUB_ENV"
-          echo "IMAGE_TAG=$IMAGE_TAG" >> "$GITHUB_ENV"
+          TAG="${{ inputs.image-tag }}"
+          if [ -z "$TAG" ]; then
+            TAG="${{ inputs.source-sha }}"
+          fi
+          echo "IMAGE_TAG=$TAG" >> "$GITHUB_ENV"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -59,9 +52,6 @@ jobs:
         run: kubectl apply -f k8s/
 
       - name: Update deployment image
-        env:
-          IMAGE_NAME: ${{ env.IMAGE_NAME }}
-          IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
-          kubectl -n "$K8S_NAMESPACE" set image deployment/gocep-api api="$IMAGE_NAME:$IMAGE_TAG"
+          kubectl -n "$K8S_NAMESPACE" set image deployment/gocep-api api="${IMAGE_NAME}:${IMAGE_TAG}"
           kubectl -n "$K8S_NAMESPACE" rollout status deployment/gocep-api --timeout=2m

@@ -1,32 +1,23 @@
 name: 3. Scan Security
 
 on:
-  workflow_run:
-    workflows: ["2. Build Docker"]
-    types: [completed]
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      source-sha:
+        required: true
+        type: string
 
 jobs:
   scan:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       security-events: write
     steps:
-      - name: Determine source revision
-        id: source
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_run" ]; then
-            echo "sha=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "sha=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.source.outputs.sha }}
+          ref: ${{ inputs.source-sha }}
 
       - name: Download image artifact
         uses: actions/download-artifact@v4
@@ -44,7 +35,7 @@ jobs:
         run: docker load -i gocep-image.tar
 
       - name: Run Trivy scan
-        uses: aquasecurity/trivy-action@v0.20.0
+        uses: aquasecurity/trivy-action@v0
         with:
           image-ref: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
           format: table

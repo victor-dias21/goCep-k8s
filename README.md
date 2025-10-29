@@ -112,7 +112,7 @@ Workflows definidos em `.github/workflows/`:
 2. **2. Build Docker** — build multi-stage e exportação como artefato
 3. **3. Scan Security** — Trivy (CRITICAL/HIGH) sobre a imagem construída
 4. **4. Push to Registry** — login + push para Docker Hub
-5. **5. Deploy to EKS** — aplica manifests quando o pipeline chegar ao fim
+5. **5. Deploy to EKS** — acionamento manual (`workflow_dispatch`) para atualizar EKS com o artefato aprovado
 
 ### Secrets necessários
 

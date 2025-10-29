@@ -1,0 +1,48 @@
+name: 0. CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  context:
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.compute-sha.outputs.sha }}
+    steps:
+      - id: compute-sha
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "sha=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "sha=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          fi
+
+  tests:
+    needs: context
+    uses: ./.github/workflows/1-test-lint.yaml
+    with:
+      source-sha: ${{ needs.context.outputs.sha }}
+
+  build:
+    needs: tests
+    uses: ./.github/workflows/2-build-docker.yaml
+    with:
+      source-sha: ${{ needs.context.outputs.sha }}
+    secrets: inherit
+
+  scan:
+    needs: build
+    uses: ./.github/workflows/3-scan-security.yaml
+    with:
+      source-sha: ${{ needs.context.outputs.sha }}
+    secrets: inherit
+
+  push-registry:
+    needs: scan
+    uses: ./.github/workflows/4-push-registry.yaml
+    with:
+      source-sha: ${{ needs.context.outputs.sha }}
+    secrets: inherit
