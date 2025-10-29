@@ -40,3 +40,7 @@ vendor/
 
 # Workflow diagnostic logs
 .workflowlogs/
+
+# Local documentation prompts
+PROMPT.md
+AGENTS.md
