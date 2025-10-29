@@ -9,6 +9,8 @@ on:
 jobs:
   context:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       sha: ${{ steps.compute-sha.outputs.sha }}
     steps:
@@ -22,12 +24,17 @@ jobs:
 
   tests:
     needs: context
+    permissions:
+      contents: read
     uses: ./.github/workflows/1-test-lint.yaml
     with:
       source-sha: ${{ needs.context.outputs.sha }}
 
   build:
     needs: tests
+    permissions:
+      contents: read
+      actions: read
     uses: ./.github/workflows/2-build-docker.yaml
     with:
       source-sha: ${{ needs.context.outputs.sha }}
@@ -35,6 +42,9 @@ jobs:
 
   scan:
     needs: build
+    permissions:
+      contents: read
+      security-events: write
     uses: ./.github/workflows/3-scan-security.yaml
     with:
       source-sha: ${{ needs.context.outputs.sha }}
@@ -42,6 +52,8 @@ jobs:
 
   push-registry:
     needs: scan
+    permissions:
+      contents: read
     uses: ./.github/workflows/4-push-registry.yaml
     with:
       source-sha: ${{ needs.context.outputs.sha }}
